@@ -1,0 +1,51 @@
+
+
+#rust folder
+
+chord_rust/target
+
+#flutter folder
+
+# Miscellaneous
+chord_flutter/*.class
+chord_flutter/*.log
+chord_flutter/*.pyc
+chord_flutter/*.swp
+chord_flutter/.DS_Store
+chord_flutter/.atom/
+chord_flutter/.buildlog/
+chord_flutter/.history
+chord_flutter/.svn/
+chord_flutter/migrate_working_dir/
+
+# IntelliJ related
+chord_flutter/*.iml
+chord_flutter/*.ipr
+chord_flutter/*.iws
+chord_flutter/.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+chord_flutter/.vscode/
+
+# Flutter/Dart/Pub related
+chord_flutter/**/doc/api/
+chord_flutter/**/ios/Flutter/.last_build_id
+chord_flutter/.dart_tool/
+chord_flutter/.flutter-plugins
+chord_flutter/.flutter-plugins-dependencies
+chord_flutter/.pub-cache/
+chord_flutter/.pub/
+chord_flutter/build/
+
+# Symbolication related
+chord_flutter/app.*.symbols
+
+# Obfuscation related
+chord_flutter/app.*.map.json
+
+# Android Studio will place build artifacts here
+chord_flutter/android/app/debug
+chord_flutter/android/app/profile
+chord_flutter/android/app/release
