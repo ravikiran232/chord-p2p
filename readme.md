@@ -8,7 +8,7 @@ The core logic of the Chord algorithm is implemented in the `chord.rs` file. Thi
 
 ### for running the linux app
 
-Get the app folder and runapp.sh file. Now run the runapp.sh in the shell
+Get the app from release and  run the runapp.sh file.
 ```bash
 ./runapp.sh
 ```
