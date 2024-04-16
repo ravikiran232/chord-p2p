@@ -1,6 +1,4 @@
-use std::{cell::RefCell,  rc::Rc};
-
-use crossbeam::channel::{ Sender};
+use std::{cell::RefCell, net::UdpSocket, rc::Rc};
 
 #[derive(Debug, Clone)]
 pub struct ChordNode {
@@ -24,7 +22,12 @@ impl ChordNode {
 
     /// This function is used to stabilize the finger table of the chord node with the given child node,
     ///  here child node is the node same as the chord node that is used for stabilize (clone the node and pass it as an argument to this function)
-    pub fn stablize(&mut self, child: Rc<RefCell<ChordNode>>, sender: &Sender<Vec<i16>>) {
+    pub fn stablize(
+        &mut self,
+        child: Rc<RefCell<ChordNode>>,
+        socketlistner: &UdpSocket,
+        src_addr: &std::net::SocketAddr,
+    ) {
         let arr = self.finger_table.clone();
         for i in 0..self.finger_table.len() {
             if arr[i].is_some() {
@@ -41,8 +44,13 @@ impl ChordNode {
                     &mut self.finger_table,
                     &self.predessor,
                 );
-                sender
-                    .send(ChordNode::parsedata(&self.finger_table, self.id))
+                socketlistner
+                    .send_to(
+                        serde_json::to_string(&ChordNode::parsedata(&self.finger_table, self.id))
+                            .unwrap()
+                            .as_bytes(),
+                        src_addr,
+                    )
                     .unwrap();
             }
         }
@@ -58,8 +66,13 @@ impl ChordNode {
             &mut self.finger_table,
             &self.predessor,
         );
-        sender
-            .send(ChordNode::parsedata(&self.finger_table, self.id))
+        socketlistner
+            .send_to(
+                serde_json::to_string(&ChordNode::parsedata(&self.finger_table, self.id))
+                    .unwrap()
+                    .as_bytes(),
+                src_addr,
+            )
             .unwrap();
 
         for node in &self.tem_nodes {
@@ -71,8 +84,13 @@ impl ChordNode {
                 &mut self.finger_table,
                 &self.predessor,
             );
-            sender
-                .send(ChordNode::parsedata(&self.finger_table, self.id))
+            socketlistner
+                .send_to(
+                    serde_json::to_string(&ChordNode::parsedata(&self.finger_table, self.id))
+                        .unwrap()
+                        .as_bytes(),
+                    src_addr,
+                )
                 .unwrap();
         }
 

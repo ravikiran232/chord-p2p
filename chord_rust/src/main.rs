@@ -1,50 +1,24 @@
-
 pub mod chord;
 
 use chord::ChordNode;
-use crossbeam::channel::{unbounded, Receiver, Sender};
 use std::cell::RefCell;
 use std::net::UdpSocket;
 use std::rc::Rc;
 fn main() {
-    let (s, r): (Sender<Vec<i16>>, Receiver<Vec<i16>>) = unbounded();
-
-    let (s1, r1): (Sender<String>, Receiver<String>) = unbounded();
-
-    let handle = std::thread::spawn(move || {
-
-        let listner = UdpSocket::bind("127.0.0.1:8080").unwrap();
-        loop {
-            let mut buffer = [0; 1024];
-            let (number_of_bytes, src_addr) = listner.recv_from(&mut buffer).unwrap();
-            let message = String::from_utf8_lossy(&buffer[..number_of_bytes]).into_owned();
-            s1.send(message).unwrap();
-            //listner.send_to("hello buddy".as_bytes(), src_addr).unwrap();
-            loop {
-                // if let Ok(data)=r.try_recv(){
-                let data = r.recv().unwrap();
-                if data.len() == 0 {
-                    break;
-                } else {
-                    listner
-                        .send_to(serde_json::to_string(&data).unwrap().as_bytes(), src_addr)
-                        .unwrap();
-                }
-            }
-        }
-    });
-
     // println!("Welcome to the chord viz you can see the finger tables in the fingertable.txt (it will be updated realtime)");
     let mut my_nodes: Vec<Rc<RefCell<ChordNode>>> = Vec::new();
     let bootstrap_node: ChordNode =
         ChordNode::new(1, [None, None, None, None, None, None, None, None]);
+    let listner = UdpSocket::bind("127.0.0.1:8080").unwrap();
+
     my_nodes.push(Rc::new(RefCell::new(bootstrap_node.clone())));
-    let mut count: u8 = 1;
     loop {
         // let mut input:String=String::from("");
         // println!("Enter your node id or type exit to quit the programm ");
         // io::stdin().read_line(&mut input).expect("Failed to read line");
-        let input = r1.recv().unwrap();
+        let mut buffer: [u8; 1024] = [0; 1024];
+        let (number_of_bytes, src_addr) = listner.recv_from(&mut buffer).unwrap();
+        let input = String::from_utf8_lossy(&buffer[..number_of_bytes]).into_owned();
         if input.trim() == "exit" {
             break;
         } else {
@@ -72,16 +46,22 @@ fn main() {
         let mut count1 = 0;
         while count1 < 3 {
             for node in &my_nodes {
-                node.borrow_mut().stablize(node.clone(), &s);
-                s.send(ChordNode::parsedata(
-                    &node.borrow().finger_table,
-                    node.borrow().id,
-                ))
-                .unwrap();
+                node.borrow_mut()
+                    .stablize(node.clone(), &listner, &src_addr);
+                listner
+                    .send_to(
+                        serde_json::to_string(&ChordNode::parsedata(
+                            &node.borrow().finger_table,
+                            node.borrow().id,
+                        ))
+                        .unwrap()
+                        .as_bytes(),
+                        src_addr,
+                    )
+                    .unwrap();
             }
             count1 += 1;
         }
-        s.send(vec![]).unwrap();
 
         //  to be used if you want to write the finger table to a file
 
@@ -124,8 +104,5 @@ fn main() {
         //     )
         //     .expect("unable to write");
         // }
-        count += 1;
     }
-
-    handle.join().unwrap();
 }
